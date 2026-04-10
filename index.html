@@ -325,12 +325,12 @@ function dateStr(daysAgo) {
 }
 
 async function fetchDaily(ticker) {
-  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dateStr(400)}/${dateStr(0)}?adjusted=true&sort=asc&limit=400&apiKey=${apiKey}`;
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dateStr(600)}/${dateStr(0)}?adjusted=true&sort=asc&limit=500&apiKey=${apiKey}`;
   return polyGet(url);
 }
 
 async function fetchWeekly(ticker) {
-  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/week/${dateStr(800)}/${dateStr(0)}?adjusted=true&sort=asc&limit=120&apiKey=${apiKey}`;
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/week/${dateStr(900)}/${dateStr(0)}?adjusted=true&sort=asc&limit=150&apiKey=${apiKey}`;
   return polyGet(url);
 }
 
@@ -365,7 +365,7 @@ async function loadSPY() {
     // SPY daily and weekly fetched sequentially through the rate limiter
     const dc = await fetchDaily('SPY');
     const wc = await fetchWeekly('SPY');
-    if (dc.length < 150 || wc.length < 50) throw new Error('Not enough data');
+    if (dc.length < 100 || wc.length < 30) throw new Error('Not enough data');
     const e20=ema(dc,20), e50=ema(dc,50), e200=ema(dc,200);
     const l=dc.length-1, p=dc[l];
     const dist = ((p - e20[l]) / e20[l] * 100);
@@ -419,7 +419,7 @@ async function analyze(ticker) {
   // Both fetches are queued through the rate limiter sequentially
   const dc = await fetchDaily(ticker);
   const wc = await fetchWeekly(ticker);
-  if (dc.length < 55 || wc.length < 50) throw new Error('Not enough data');
+  if (dc.length < 30 || wc.length < 30) throw new Error('Not enough data');
   const dl=dc.length-1, wl=wc.length-1;
   const de20=ema(dc,20), de50=ema(dc,50), de200=ema(dc,200);
   const we20=ema(wc,20), we50=ema(wc,50);
