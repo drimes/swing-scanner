@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Davy's Swing Trade Scanner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px}
+.topbar{background:#1a1a1a;color:#fff;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.topbar-title{font-size:16px;font-weight:600}
+.topbar-sub{font-size:12px;color:#aaa}
+.rp{font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px}
+.rl{background:#16a34a;color:#fff}.rs{background:#dc2626;color:#fff}.rm{background:#d97706;color:#fff}.rx{background:#6b7280;color:#fff}
+.main{max-width:1400px;margin:0 auto;padding:20px}
+.card{background:#fff;border-radius:10px;border:1px solid #e5e5e0;padding:16px 18px;margin-bottom:14px}
+.setup-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px 20px;margin-bottom:14px}
+.setup-box h2{font-size:15px;font-weight:700;color:#1d4ed8;margin-bottom:10px}
+.steps{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.step{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6}
+.sn{background:#2563eb;color:#fff;font-weight:700;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.st{color:#1e40af}.st a{color:#1d4ed8;font-weight:600}.st code{background:#dbeafe;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px}
+.api-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.api-row input{font-size:13px;padding:7px 12px;border:1px solid #93c5fd;border-radius:8px;background:#fff;color:#1a1a1a;outline:none;min-width:280px;font-family:monospace}
+.api-row input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.btn-api{padding:7px 16px;font-size:13px;font-weight:600;border-radius:8px;border:none;cursor:pointer;background:#2563eb;color:#fff}
+.btn-api:hover{background:#1d4ed8}
+.btn-api.grey{background:#6b7280}.btn-api.grey:hover{background:#4b5563}
+.tres{font-size:13px;margin-top:8px;padding:8px 12px;border-radius:8px;display:none}
+.tok{background:#dcfce7;color:#15803d;display:block}
+.tfa{background:#fee2e2;color:#dc2626;display:block}
+.spy-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.lbl{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.val{font-weight:700;font-size:14px}
+.ok{color:#16a34a}.warn{color:#d97706}.bad{color:#dc2626}
+.cr{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.cr:last-child{margin-bottom:0}
+select,input[type=text]{font-size:13px;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#1a1a1a;outline:none}
+.btn{padding:8px 18px;font-size:13px;font-weight:600;border-radius:8px;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-scan{background:#16a34a;color:#fff}.btn-scan:hover{background:#15803d}
+.btn-scan:disabled{background:#9ca3af;cursor:not-allowed;transform:none}
+.btn-stop{background:#dc2626;color:#fff}
+.btn-exp{background:#2563eb;color:#fff}
+.btn-clr{background:#f3f4f6;color:#374151;border:1px solid #d1d5db}
+.btn-ret{background:#7c3aed;color:#fff;font-size:12px;padding:6px 14px}
+.tgl{display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb;font-size:13px;user-select:none}
+.tgl.on{background:#eff6ff;border-color:#2563eb;color:#1d4ed8}
+.tgl input{width:14px;height:14px;cursor:pointer;accent-color:#2563eb}
+.pb{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-bottom:6px}
+.pf{height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:3px;transition:width .3s;width:0%}
+.stxt{font-size:13px;color:#6b7280;min-height:18px}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.sc{background:#fff;border-radius:10px;border:1px solid #e5e5e0;padding:12px 16px;flex:1;min-width:85px;text-align:center}
+.sc .lbl{margin-bottom:4px}
+.sc .val{font-size:22px;font-weight:700}
+.rc{background:#fff;border-radius:10px;border:1px solid #e5e5e0;overflow:hidden}
+.rh{padding:12px 18px;border-bottom:1px solid #f0f0ea;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.rct{font-weight:600}
+.rcn{font-size:12px;color:#9ca3af}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-weight:500}
+.tab:hover{background:#f3f4f6}
+.tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#f9fafb;padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #f0f0ea;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{background:#f3f4f6;color:#374151}
+tbody tr{border-bottom:1px solid #f5f5f0}
+tbody tr:hover{background:#fafaf8}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 12px;vertical-align:middle}
+.tkr{font-weight:700;color:#1a1a1a;background:none;border:none;cursor:pointer;text-decoration:underline;text-decoration-color:#d1d5db;padding:0;font-size:13px}
+.tkr:hover{color:#2563eb}
+.sig{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.s-su{background:#dcfce7;color:#15803d}
+.s-wa{background:#fef3c7;color:#b45309}
+.s-ho{background:#dbeafe;color:#1d4ed8}
+.s-sh{background:#f3e8ff;color:#7c3aed}
+.s-no{background:#f3f4f6;color:#9ca3af}
+.sw{display:flex;align-items:center;gap:6px}
+.sn2{font-weight:600;min-width:18px}
+.sb{width:48px;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden}
+.sf{height:100%;border-radius:3px}
+.hi{background:#16a34a}.md{background:#d97706}.lo{background:#dc2626}
+.pct{font-size:12px;font-weight:600;padding:2px 7px;border-radius:5px}
+.p-ok{background:#dcfce7;color:#15803d}
+.p-wa{background:#fef3c7;color:#b45309}
+.p-ba{background:#fee2e2;color:#dc2626}
+.cks{display:flex;gap:3px;flex-wrap:wrap}
+.ck{font-size:10px;font-weight:600;padding:2px 5px;border-radius:4px;white-space:nowrap}
+.c-ok{background:#dcfce7;color:#15803d}
+.c-wa{background:#fef3c7;color:#b45309}
+.c-ba{background:#fee2e2;color:#dc2626}
+.c-ne{background:#f3f4f6;color:#6b7280}
+.ab{background:#fffbeb;border:1px solid #fbbf24;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:none;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+.ab.show{display:flex}
+.es{text-align:center;padding:60px 20px;color:#9ca3af}
+.es h3{font-size:16px;font-weight:600;margin-bottom:6px;color:#374151}
+.es p{font-size:13px;line-height:1.6}
+#cw{display:none}#cw.show{display:block}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#6b7280;align-items:center;padding-top:10px;border-top:1px solid #f0f0ea;margin-top:10px}
+.note{font-size:11px;color:#9ca3af;background:#f9fafb;border-radius:6px;padding:4px 10px;border:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><div class="topbar-title">Davy's Swing Trade Scanner</div><div class="topbar-sub">Polygon.io · EMA20/50/200 · Weekly filter · SPY regime · Your rules</div></div>
+  <span class="rp rx" id="rp">SPY: Loading...</span>
+</div>
+<div class="main">
+
+<!-- SETUP -->
+<div class="setup-box" id="setup-box">
+  <h2>One-time setup — free Polygon.io API key (no daily limit, unlimited requests)</h2>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div class="st">Go to <a href="https://polygon.io/dashboard/signup" target="_blank">polygon.io/dashboard/signup</a> and create a free account. No credit card needed.</div></div>
+    <div class="step"><div class="sn">2</div><div class="st">After signup your API key is shown immediately on the dashboard. It looks like: <code>abcDEF123456abcDEF123456abcDEF12</code></div></div>
+    <div class="step"><div class="sn">3</div><div class="st">Paste it below and click Save &amp; Test. Free plan gives unlimited requests with end-of-day data — perfect for swing trading.</div></div>
+  </div>
+  <div class="api-row">
+    <input type="text" id="key-input" placeholder="Paste your Polygon.io API key" />
+    <button class="btn-api" onclick="saveAndTest()">Save &amp; Test</button>
+    <button class="btn-api grey" onclick="document.getElementById('setup-box').style.display='none'">Hide guide</button>
+  </div>
+  <div class="tres" id="tres"></div>
+  <div style="margin-top:10px;font-size:12px;color:#6b7280">Free plan: unlimited daily requests · end-of-day data · no credit card · scans 100+ stocks with no throttling issues</div>
+</div>
+
+<!-- SPY -->
+<div class="card">
+  <div class="spy-row">
+    <div><div class="lbl">SPY Price</div><div class="val" id="sp">—</div></div>
+    <div><div class="lbl">EMA20</div><div class="val" id="se20">—</div></div>
+    <div><div class="lbl">EMA50</div><div class="val" id="se50">—</div></div>
+    <div><div class="lbl">EMA200</div><div class="val" id="se200">—</div></div>
+    <div><div class="lbl">EMA20 Dist</div><div class="val" id="sd">—</div></div>
+    <div><div class="lbl">Regime</div><div class="val" id="sr">Waiting...</div></div>
+    <div style="margin-left:auto"><button class="btn btn-ret" onclick="loadSPY()">↻ Retry SPY</button></div>
+  </div>
+</div>
+
+<!-- Manual fallback -->
+<div class="ab" id="mbar">
+  <span style="font-weight:600;color:#b45309">⚠ SPY fetch failed.</span>
+  <span>Set regime manually:</span>
+  <select id="msel">
+    <option value="LONG FULL">LONG FULL</option>
+    <option value="LONG MIXED">LONG MIXED</option>
+    <option value="SHORT FULL" selected>SHORT FULL</option>
+    <option value="CHOPPY">CHOPPY</option>
+  </select>
+  <button class="btn btn-ret" onclick="applyManual()">Apply</button>
+</div>
+
+<!-- Controls -->
+<div class="card">
+  <div class="cr">
+    <select id="uni" onchange="onUni()">
+      <optgroup label="Your trade history">
+        <option value="midcap">Mid-cap favorites — your past trades (50 stocks)</option>
+      </optgroup>
+      <optgroup label="S&P 500 — scan in parts">
+        <option value="sp500a">S&amp;P 500 Part A (100 stocks)</option>
+        <option value="sp500b">S&amp;P 500 Part B (100 stocks)</option>
+        <option value="sp500c">S&amp;P 500 Part C (100 stocks)</option>
+        <option value="nasdaq100">Nasdaq 100</option>
+      </optgroup>
+      <optgroup label="Sectors">
+        <option value="energy">Energy (25)</option>
+        <option value="finance">Financials (25)</option>
+        <option value="healthcare">Healthcare (25)</option>
+        <option value="industrial">Industrials (25)</option>
+        <option value="tech">Technology (25)</option>
+        <option value="reit">REITs &amp; Income (25)</option>
+      </optgroup>
+      <optgroup label="Custom">
+        <option value="custom">Custom — paste your own tickers</option>
+      </optgroup>
+    </select>
+    <div id="cw"><input type="text" id="ci" placeholder="e.g. EPD, VLY, CNP, OPCH" style="min-width:260px"/></div>
+    <button class="btn btn-scan" id="sbtn" onclick="startScan()">▶ Start Scan</button>
+    <button class="btn btn-stop" id="stopbtn" style="display:none" onclick="stopScan()">■ Stop</button>
+    <button class="btn btn-exp" id="expbtn" onclick="exportCSV()" disabled>↓ Export CSV</button>
+    <button class="btn btn-clr" onclick="clearAll()">Clear</button>
+    <span class="note" id="rate-note">Free plan · no daily limit</span>
+  </div>
+  <div class="cr">
+    <label class="tgl" id="lov"><input type="checkbox" id="ovre" onchange="stgl('lov','ovre')"> Watchlist mode (ignore SPY regime)</label>
+    <label class="tgl on" id="lsh"><input type="checkbox" id="shsh" checked onchange="stgl('lsh','shsh')"> Show short setups</label>
+    <label class="tgl on" id="lho"><input type="checkbox" id="shho" checked onchange="stgl('lho','shho')"> Show holding-up stocks</label>
+    <select id="sigf" onchange="renderTable()">
+      <option value="all">All signals</option>
+      <option value="setup">SETUP ↑ only</option>
+      <option value="watch">SETUP + WATCH</option>
+      <option value="hold">Holding up</option>
+      <option value="short">SHORT ↓ only</option>
+    </select>
+  </div>
+  <div class="leg">
+    <span style="font-weight:600;color:#374151">Signal key:</span>
+    <span><span class="sig s-su">SETUP ↑</span> Score ≥7 · above EMA50 · EMA20 rising · weekly up · dist &lt;12%</span>
+    <span><span class="sig s-wa">WATCH</span> Score ≥5 · above EMA50 · EMA20 rising</span>
+    <span><span class="sig s-ho">HOLDING UP</span> Score ≥3 · above EMA50 — watchlist</span>
+    <span><span class="sig s-sh">SHORT ↓</span> Below all EMAs · weekly downtrend</span>
+  </div>
+</div>
+
+<!-- Progress -->
+<div id="pc" style="display:none" class="card">
+  <div class="pb"><div class="pf" id="pfill"></div></div>
+  <div class="stxt" id="stxt">Starting...</div>
+</div>
+<div class="stxt" id="idle" style="margin-bottom:12px">Paste your Polygon.io API key above to get started.</div>
+
+<!-- Summary -->
+<div class="sum" id="sumrow" style="display:none">
+  <div class="sc"><div class="lbl">Scanned</div><div class="val" id="nsc">0</div></div>
+  <div class="sc"><div class="lbl">Setup ↑</div><div class="val ok" id="nsu">0</div></div>
+  <div class="sc"><div class="lbl">Watch</div><div class="val warn" id="nwa">0</div></div>
+  <div class="sc"><div class="lbl">Holding</div><div class="val" style="color:#2563eb" id="nho">0</div></div>
+  <div class="sc"><div class="lbl">Short ↓</div><div class="val" style="color:#7c3aed" id="nsh">0</div></div>
+  <div class="sc"><div class="lbl">None</div><div class="val" style="color:#9ca3af" id="nno">0</div></div>
+  <div class="sc"><div class="lbl">Errors</div><div class="val bad" id="ner">0</div></div>
+</div>
+
+<!-- Results -->
+<div class="rc">
+  <div class="rh">
+    <div><div class="rct">Scan Results</div><div class="rcn" id="rcnt">No results yet</div></div>
+    <div class="tabs">
+      <span class="tab active" onclick="setTab('all',this)">All</span>
+      <span class="tab" onclick="setTab('setup',this)">Setup ↑</span>
+      <span class="tab" onclick="setTab('watch',this)">Watch</span>
+      <span class="tab" onclick="setTab('hold',this)">Holding</span>
+      <span class="tab" onclick="setTab('short',this)">Short ↓</span>
+    </div>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr>
+        <th onclick="srt('ticker')">Ticker ↕</th>
+        <th onclick="srt('price')">Price ↕</th>
+        <th>Signal</th>
+        <th onclick="srt('score')">Score /11 ↕</th>
+        <th onclick="srt('d20')">D-EMA20% ↕</th>
+        <th onclick="srt('w20')">W-EMA20% ↕</th>
+        <th>EMA20d</th><th>EMA50d</th><th>EMA200d</th>
+        <th>Checks</th><th>Chart</th>
+      </tr></thead>
+      <tbody id="tbody">
+        <tr><td colspan="11"><div class="es">
+          <h3>Ready to scan</h3>
+          <p>Enter your Polygon.io API key above,<br>select a universe and click Start Scan.</p>
+        </div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<script>
+const UNI={
+  midcap:['EPD','MPLX','NLY','VLY','COLB','ZTO','SSL','CM','IAG','OPCH','SFD','UPS','ARR','BRKR','CNP','GTX','LBRT','AS','CPRI','CTRE','ALB','TTMI','INVX','AMKR','ARQT','WFRD','M','F','ASAN','RIG','EXLS','FRSH','SRAD','OTEX','UCTT','FWONK','WAY','SMFG','AMRX','SARO','ALHC','MO','PM','O','MAIN','STAG','IRM','T','VZ','USB','PNC'],
+  sp500a:['AAPL','MSFT','AMZN','GOOGL','META','NVDA','JPM','JNJ','V','PG','UNH','HD','MA','XOM','CVX','LLY','ABBV','MRK','PEP','KO','AVGO','COST','TMO','MCD','ACN','NEE','DHR','TXN','HON','QCOM','PM','IBM','GE','CAT','RTX','BA','MMM','GS','MS','BAC','WFC','C','USB','AXP','BLK','SCHW','T','VZ','CMCSA','DIS','NFLX','CRM','ADBE','ORCL','AMD','INTC','CSCO','NOW','INTU','AMAT','LRCX','KLAC','MU','FTNT','PANW','CRWD','DDOG','NET','SNOW','PLTR','UBER','ABNB','LMT','NOC','GD','TDG','CARR','EMR','ETN','PH','ROK','ITW','FDX','UPS','CSX','UNP','NSC','GWW','AME','FAST','CTAS','ODFL','PAYX','VRSK','EPD','MPLX','WMB','KMI','MKC','GIS','HRL','TSN'],
+  sp500b:['COP','EOG','SLB','HAL','MPC','PSX','VLO','DVN','APA','OXY','BKR','PPL','SO','D','EXC','DUK','AEP','XEL','ES','ED','SRE','WEC','CNP','AES','VLY','COLB','FITB','HBAN','KEY','CFG','MTB','ALLY','COF','DFS','SYF','SPG','PSA','EQR','AVB','MAA','UDR','CPT','ESS','VTR','WELL','O','MAIN','STAG','WPC','NNN','ADC','OHI','SBAC','AMT','CCI','IRM','NLY','ARR','AGNC','PNC','TFC','ZION','CMA','ZTO','SSL','CM','IAG','OPCH','SFD','BRKR','GTX','LBRT','WFRD','RIG','EXLS','FRSH','SRAD','OTEX','UCTT','FWONK','WAY','AMRX','SARO','ALHC','CPRI','CTRE','TTMI','INVX','AMKR','ARQT','MO','PM','SMFG','ALHC','AS'],
+  sp500c:['PFE','ABT','MRK','ABBV','LLY','BMY','AMGN','GILD','BIIB','REGN','VRTX','ISRG','SYK','MDT','BSX','ZBH','HOLX','EXAS','HCA','CNC','MOH','DVA','LH','DGX','NFLX','SPOT','SNAP','RBLX','U','COIN','DASH','LYFT','SQ','PYPL','SHOP','TWLO','OKTA','ZM','DOCU','WDAY','VEEV','HUBS','BILL','PCTY','PAYC','MDB','SPLK','PD','DOMO','APPN','DXC','LDOS','ACN','SAIC','CACI','BAH','LEIDOS','CBRE','JLL','NKTR','INCY','ALNY','IONS','SRPT','BMRN','EDIT','BEAM','CRSP','FATE','NTLA','RXRX','TGTX','ARVN','KROS','IMVT','PTGX','FGEN','AXSM','CPRX','HRMY','ACAD','SAGE','PTCT','RARE','HALO','FOLD','IQV','MEDP','MLAB','NVCR','DVA','MOH','CNC','HCA'],
+  nasdaq100:['AAPL','MSFT','AMZN','GOOGL','META','NVDA','TSLA','AVGO','COST','NFLX','AMD','ADBE','CSCO','INTU','TXN','QCOM','HON','AMAT','SBUX','REGN','VRTX','MDLZ','LRCX','KLAC','SNPS','CDNS','MRVL','ADI','PANW','CRWD','FTNT','DDOG','ZS','MDB','OKTA','WDAY','NOW','TEAM','DOCU','ZOOM','LYFT','UBER','ABNB','DASH','COIN','RBLX','U','SNAP','PINS','BMRN','ILMN','IDXX','FAST','CTAS','ODFL','PAYX','VRSK','ANSS','CPRT','EA','TTWO','JD','BIDU','PDD','WBA','CSX','PCAR','DXCM','BIIB','GILD','MRNA','ALNY','EXAS','HOLX','ALGN','HSIC','MCHP','SWKS','MPWR','XEL','VRSN','NXPI','MU','ASML','SPLK','CDNS'],
+  energy:['XOM','CVX','COP','EOG','SLB','HAL','MPC','PSX','VLO','DVN','APA','OXY','BKR','WFRD','RIG','HP','PTEN','SM','MTDR','CIVI','EPD','MPLX','WMB','KMI','LNG'],
+  finance:['JPM','BAC','GS','MS','WFC','C','USB','TFC','VLY','COLB','PNC','FITB','HBAN','KEY','CFG','MTB','ALLY','COF','DFS','SYF','AXP','BLK','SCHW','MAIN','O'],
+  healthcare:['JNJ','UNH','PFE','ABT','TMO','MRK','ABBV','LLY','BMY','AMGN','GILD','ISRG','SYK','MDT','BSX','ZBH','HOLX','EXAS','OPCH','HCA','CNC','MOH','DVA','LH','DGX'],
+  industrial:['GE','HON','CAT','RTX','BA','MMM','LMT','NOC','GD','TDG','CARR','OTIS','EMR','ETN','PH','ROK','ITW','XYL','FDX','UPS','CSX','UNP','NSC','GWW','AME'],
+  tech:['AAPL','MSFT','NVDA','AMD','INTC','CSCO','AVGO','TXN','QCOM','AMAT','LRCX','KLAC','MU','NOW','CRM','ADBE','ORCL','INTU','PANW','CRWD','FTNT','DDOG','NET','SNOW','PLTR'],
+  reit:['O','MAIN','STAG','IRM','MPW','STOR','WPC','NNN','ADC','OHI','SBAC','AMT','CCI','SPG','PSA','EQR','AVB','MAA','UDR','CPT','ESS','VTR','WELL','DOC','COLD']
+};
+
+let apiKey = localStorage.getItem('polyKey') || '';
+let spyData = null;
+let allResults = [];
+let scanning = false;
+let stopFlag = false;
+let activeTab = 'all';
+let sortField = 'score';
+let sortDir = -1;
+
+if(apiKey){
+  document.getElementById('key-input').value = apiKey;
+  document.getElementById('idle').textContent = 'API key loaded. Click ↻ Retry SPY to load market data.';
+  loadSPY();
+}
+
+function ema(arr,p){
+  const k=2/(p+1);const s=[arr[0]];
+  for(let i=1;i<arr.length;i++) s.push(arr[i]*k+s[i-1]*(1-k));
+  return s;
+}
+
+// Polygon: fetch daily candles (last N trading days)
+async function fetchDaily(ticker){
+  const to = new Date();
+  const from = new Date(); from.setFullYear(from.getFullYear()-1);
+  const toStr = to.toISOString().slice(0,10);
+  const fromStr = from.toISOString().slice(0,10);
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${fromStr}/${toStr}?adjusted=true&sort=asc&limit=365&apiKey=${apiKey}`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d = await r.json();
+  if(d.status==='ERROR'||d.status==='NOT_AUTHORIZED') throw new Error(d.error||d.message||'Unauthorized — check API key');
+  if(!d.results||d.results.length<30) throw new Error('No data');
+  return d.results.map(b=>b.c);
+}
+
+// Polygon: fetch weekly candles (last 2 years)
+async function fetchWeekly(ticker){
+  const to = new Date();
+  const from = new Date(); from.setFullYear(from.getFullYear()-2);
+  const toStr = to.toISOString().slice(0,10);
+  const fromStr = from.toISOString().slice(0,10);
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/week/${fromStr}/${toStr}?adjusted=true&sort=asc&limit=110&apiKey=${apiKey}`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d = await r.json();
+  if(d.status==='ERROR'||d.status==='NOT_AUTHORIZED') throw new Error(d.error||d.message||'Unauthorized');
+  if(!d.results||d.results.length<30) throw new Error('No weekly data');
+  return d.results.map(b=>b.c);
+}
+
+async function saveAndTest(){
+  const key = document.getElementById('key-input').value.trim();
+  const res = document.getElementById('tres');
+  res.className='tres'; res.textContent='Testing...'; res.style.display='block';
+  if(!key){res.className='tres tfa';res.textContent='Enter your key first.';return;}
+  apiKey=key;
+  try{
+    const closes = await fetchDaily('AAPL');
+    if(closes.length>10){
+      localStorage.setItem('polyKey',key);
+      res.className='tres tok';
+      res.textContent='✓ Connected! AAPL data received ('+closes.length+' days). Loading SPY now...';
+      document.getElementById('idle').textContent='API key saved. Loading SPY...';
+      loadSPY();
+    }
+  }catch(e){
+    apiKey='';
+    res.className='tres tfa';
+    res.textContent='✗ Failed: '+e.message+'. Go to polygon.io/dashboard and copy your API key again.';
+  }
+}
+
+async function loadSPY(){
+  document.getElementById('sr').textContent='Fetching...';
+  try{
+    const dc=await fetchDaily('SPY');
+    const wc=await fetchWeekly('SPY');
+    if(dc.length<200||wc.length<50) throw new Error('Not enough data');
+    const e20=ema(dc,20),e50=ema(dc,50),e200=ema(dc,200);
+    const l=dc.length-1,p=dc[l];
+    const dist=((p-e20[l])/e20[l]*100);
+    const rising=e20[l]>e20[l-1];
+    let regime=p>e20[l]&&p>e50[l]&&p>e200[l]&&e20[l]>e50[l]&&rising?'LONG FULL':p>e50[l]&&p>e200[l]?'LONG MIXED':p<e20[l]&&p<e50[l]&&p<e200[l]?'SHORT FULL':'CHOPPY';
+    spyData={p,e20:e20[l],e50:e50[l],e200:e200[l],dist,regime};
+    document.getElementById('sp').textContent='$'+p.toFixed(2);
+    document.getElementById('se20').textContent='$'+e20[l].toFixed(2);
+    document.getElementById('se50').textContent='$'+e50[l].toFixed(2);
+    document.getElementById('se200').textContent='$'+e200[l].toFixed(2);
+    const de=document.getElementById('sd');
+    de.textContent=dist.toFixed(1)+'%';
+    de.className='val '+(Math.abs(dist)>12?'bad':Math.abs(dist)>8?'warn':'ok');
+    document.getElementById('sr').textContent=regime;
+    const rp=document.getElementById('rp');
+    rp.textContent='SPY: '+regime;
+    rp.className='rp '+(regime==='LONG FULL'?'rl':regime==='SHORT FULL'?'rs':'rm');
+    document.getElementById('mbar').classList.remove('show');
+    document.getElementById('idle').textContent='SPY loaded — '+regime+'. Ready to scan.';
+    if(regime==='SHORT FULL'||regime==='CHOPPY'){
+      document.getElementById('ovre').checked=true;stgl('lov','ovre');
+      document.getElementById('idle').textContent='SPY is '+regime+'. Watchlist mode enabled.';
+    }
+  }catch(e){
+    document.getElementById('sr').textContent='Failed: '+e.message;
+    document.getElementById('mbar').classList.add('show');
+    if(!spyData) spyData={regime:'SHORT FULL'};
+    document.getElementById('ovre').checked=true;stgl('lov','ovre');
+  }
+}
+
+function applyManual(){
+  const v=document.getElementById('msel').value;
+  if(!spyData)spyData={};spyData.regime=v;
+  document.getElementById('sr').textContent=v+' (manual)';
+  const rp=document.getElementById('rp');
+  rp.textContent='SPY: '+v;
+  rp.className='rp '+(v==='LONG FULL'?'rl':v==='SHORT FULL'?'rs':'rm');
+  document.getElementById('mbar').classList.remove('show');
+  if(v==='SHORT FULL'||v==='CHOPPY'){document.getElementById('ovre').checked=true;stgl('lov','ovre');}
+}
+
+async function analyze(ticker){
+  const [dc,wc]=await Promise.all([fetchDaily(ticker),fetchWeekly(ticker)]);
+  if(dc.length<55||wc.length<50) throw new Error('Not enough data');
+  const dl=dc.length-1,wl=wc.length-1;
+  const de20=ema(dc,20),de50=ema(dc,50),de200=ema(dc,200);
+  const we20=ema(wc,20),we50=ema(wc,50);
+  const price=dc[dl];
+  const e20d=de20[dl],e50d=de50[dl],e200d=de200[dl];
+  const e20w=we20[wl],e50w=we50[wl];
+  const e20rising=de20[dl]>de20[dl-1];
+  const d20=((price-e20d)/e20d*100);
+  const w20=((price-e20w)/e20w*100);
+  const aboveE50=price>e50d,aboveE200=price>e200d;
+  const wklyUp=price>e20w&&price>e50w;
+  const inZone=price<=e20d*1.07&&price>=e50d*0.96;
+  const wext=Math.abs(w20);
+
+  let score=0,checks=[];
+  if(e20rising){score+=2;checks.push({t:'E20↑',c:'ok'});}else checks.push({t:'E20↓',c:'ba'});
+  if(aboveE50){score+=2;checks.push({t:'>E50',c:'ok'});}else checks.push({t:'<E50',c:'ba'});
+  if(aboveE200){score+=1;checks.push({t:'>E200',c:'ok'});}else checks.push({t:'<E200',c:'ne'});
+  if(wklyUp){score+=2;checks.push({t:'Wkly↑',c:'ok'});}else checks.push({t:'Wkly↓',c:'ba'});
+  if(inZone){score+=2;checks.push({t:'Zone✓',c:'ok'});}else checks.push({t:'Zone✗',c:'ne'});
+  if(wext<=8){score+=2;checks.push({t:'Ext✓',c:'ok'});}
+  else if(wext<=12){score+=1;checks.push({t:'Ext⚠',c:'wa'});}
+  else{score-=1;checks.push({t:'Ext❌',c:'ba'});}
+
+  const regime=(spyData&&spyData.regime)||'LONG FULL';
+  const ov=document.getElementById('ovre').checked;
+  const canLong=ov||regime.includes('LONG');
+  const canShort=document.getElementById('shsh').checked&&(ov||regime.includes('SHORT'));
+  const showHold=document.getElementById('shho').checked;
+
+  let signal='NONE';
+  if(score>=7&&aboveE50&&e20rising&&wklyUp&&wext<=12&&canLong) signal='SETUP ↑';
+  else if(score>=5&&aboveE50&&e20rising&&canLong) signal='WATCH';
+  else if(score>=3&&aboveE50&&canLong&&showHold) signal='HOLDING UP';
+  else if(!aboveE50&&!wklyUp&&price<e20d&&score<=3&&canShort) signal='SHORT ↓';
+
+  return {ticker,price,e20d,e50d,e200d,signal,score,d20,w20,checks};
+}
+
+// Polygon free = 5 req/min — we pace at 1 per 1.5s (safe for 2 concurrent requests per stock)
+let lastReq=0;
+async function rateWait(){
+  const wait=Math.max(0,1500-(Date.now()-lastReq));
+  if(wait>0) await sleep(wait);
+  lastReq=Date.now();
+}
+
+async function startScan(){
+  if(scanning) return;
+  if(!apiKey){alert('Save your Polygon.io API key first.');return;}
+  const sel=document.getElementById('uni').value;
+  let tickers;
+  if(sel==='custom'){
+    const raw=document.getElementById('ci').value;
+    tickers=[...new Set(raw.split(/[\s,;]+/).map(t=>t.trim().toUpperCase()).filter(Boolean))];
+    if(!tickers.length){alert('Enter tickers first.');return;}
+  } else {
+    tickers=[...new Set(UNI[sel]||[])];
+  }
+
+  allResults=[];stopFlag=false;scanning=true;
+  document.getElementById('sbtn').disabled=true;
+  document.getElementById('stopbtn').style.display='';
+  document.getElementById('expbtn').disabled=true;
+  document.getElementById('sumrow').style.display='none';
+  document.getElementById('pc').style.display='block';
+  document.getElementById('idle').style.display='none';
+  document.getElementById('tbody').innerHTML='<tr><td colspan="11"><div class="es"><h3>Scanning '+tickers.length+' stocks...</h3><p>Results appear as each stock completes.</p></div></td></tr>';
+
+  for(let i=0;i<tickers.length;i++){
+    if(stopFlag) break;
+    const t=tickers[i];
+    setSt('Analyzing '+t+' — '+(i+1)+' of '+tickers.length+' ('+Math.round((i/tickers.length)*100)+'%)');
+    setProg((i/tickers.length)*100);
+    await rateWait();
+    try{ allResults.push(await analyze(t)); }
+    catch(e){ allResults.push({ticker:t,price:0,e20d:0,e50d:0,e200d:0,signal:'ERROR',score:0,d20:0,w20:0,checks:[{t:e.message,c:'ba'}]}); }
+    if(i%5===0||i===tickers.length-1) renderTable();
+  }
+
+  setProg(100);
+  const found=allResults.filter(r=>['SETUP ↑','WATCH','HOLDING UP','SHORT ↓'].includes(r.signal)).length;
+  setSt('Done — '+found+' candidates from '+allResults.length+' stocks. Click any ticker to open TradingView.');
+  scanning=false;
+  document.getElementById('sbtn').disabled=false;
+  document.getElementById('stopbtn').style.display='none';
+  document.getElementById('expbtn').disabled=false;
+  renderTable();
+}
+
+function stopScan(){stopFlag=true;setSt('Stopping...');}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setSt(m){document.getElementById('stxt').textContent=m;}
+function setProg(p){document.getElementById('pfill').style.width=p+'%';}
+
+function renderTable(){
+  const fsig=document.getElementById('sigf').value,tab=activeTab;
+  let rows=allResults.filter(r=>{
+    if(r.signal==='ERROR') return tab==='all'&&fsig==='all';
+    const sf=fsig==='all'||(fsig==='setup'&&r.signal==='SETUP ↑')||(fsig==='watch'&&(r.signal==='SETUP ↑'||r.signal==='WATCH'))||(fsig==='hold'&&r.signal==='HOLDING UP')||(fsig==='short'&&r.signal==='SHORT ↓');
+    const tf=tab==='all'||(tab==='setup'&&r.signal==='SETUP ↑')||(tab==='watch'&&(r.signal==='SETUP ↑'||r.signal==='WATCH'))||(tab==='hold'&&r.signal==='HOLDING UP')||(tab==='short'&&r.signal==='SHORT ↓');
+    return sf&&tf;
+  });
+  const so={'SETUP ↑':0,'WATCH':1,'HOLDING UP':2,'SHORT ↓':3,'NONE':4,'ERROR':5};
+  rows.sort((a,b)=>{
+    if(sortField==='ticker') return sortDir*a.ticker.localeCompare(b.ticker);
+    if(sortField==='price') return sortDir*(b.price-a.price);
+    if(sortField==='d20') return sortDir*(b.d20-a.d20);
+    if(sortField==='w20') return sortDir*(b.w20-a.w20);
+    const sd=(so[a.signal]??4)-(so[b.signal]??4);
+    return sd!==0?sd:sortDir*(b.score-a.score);
+  });
+
+  document.getElementById('tbody').innerHTML=rows.length?rows.map(rHTML).join(''):'<tr><td colspan="11"><div class="es"><h3>No results in this view</h3><p>Try switching tabs or enabling Watchlist mode.</p></div></td></tr>';
+
+  const v=allResults.filter(r=>r.signal!=='ERROR');
+  document.getElementById('nsc').textContent=allResults.length;
+  document.getElementById('nsu').textContent=v.filter(r=>r.signal==='SETUP ↑').length;
+  document.getElementById('nwa').textContent=v.filter(r=>r.signal==='WATCH').length;
+  document.getElementById('nho').textContent=v.filter(r=>r.signal==='HOLDING UP').length;
+  document.getElementById('nsh').textContent=v.filter(r=>r.signal==='SHORT ↓').length;
+  document.getElementById('nno').textContent=v.filter(r=>r.signal==='NONE').length;
+  document.getElementById('ner').textContent=allResults.filter(r=>r.signal==='ERROR').length;
+  document.getElementById('sumrow').style.display='flex';
+  document.getElementById('rcnt').textContent=rows.length+' result'+(rows.length!==1?'s':'')+' shown';
+}
+
+function rHTML(r){
+  if(r.signal==='ERROR') return `<tr><td><button class="tkr" onclick="openTV('${r.ticker}')">${r.ticker}</button></td><td colspan="9" style="color:#dc2626;font-size:12px">${r.checks[0]?.t||'Error'}</td><td><button class="tkr" onclick="openTV('${r.ticker}')">Chart ↗</button></td></tr>`;
+  const sc={'SETUP ↑':'s-su','WATCH':'s-wa','HOLDING UP':'s-ho','SHORT ↓':'s-sh','NONE':'s-no'}[r.signal]||'s-no';
+  const pct=Math.min(100,Math.round(Math.max(0,r.score)/11*100));
+  const sf=pct>=64?'hi':pct>=36?'md':'lo';
+  const d20c=Math.abs(r.d20)>12?'p-ba':Math.abs(r.d20)>8?'p-wa':'p-ok';
+  const w20c=Math.abs(r.w20)>12?'p-ba':Math.abs(r.w20)>8?'p-wa':'p-ok';
+  const cm={ok:'c-ok',wa:'c-wa',ba:'c-ba',ne:'c-ne'};
+  const tags=r.checks.map(c=>`<span class="ck ${cm[c.c]||'c-ne'}">${c.t}</span>`).join('');
+  return `<tr>
+    <td><button class="tkr" onclick="openTV('${r.ticker}')">${r.ticker}</button></td>
+    <td>$${r.price.toFixed(2)}</td>
+    <td><span class="sig ${sc}">${r.signal}</span></td>
+    <td><div class="sw"><span class="sn2">${r.score}</span><div class="sb"><div class="sf ${sf}" style="width:${pct}%"></div></div></div></td>
+    <td><span class="pct ${d20c}">${r.d20.toFixed(1)}%</span></td>
+    <td><span class="pct ${w20c}">${r.w20.toFixed(1)}%</span></td>
+    <td style="color:#6b7280">$${r.e20d.toFixed(2)}</td>
+    <td style="color:#6b7280">$${r.e50d.toFixed(2)}</td>
+    <td style="color:#6b7280">$${r.e200d.toFixed(2)}</td>
+    <td><div class="cks">${tags}</div></td>
+    <td><button class="tkr" onclick="openTV('${r.ticker}')">Chart ↗</button></td>
+  </tr>`;
+}
+
+function openTV(t){window.open('https://www.tradingview.com/chart/?symbol='+t,'_blank');}
+function setTab(t,el){activeTab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');if(allResults.length)renderTable();}
+function srt(f){if(sortField===f)sortDir*=-1;else{sortField=f;sortDir=-1;}if(allResults.length)renderTable();}
+function clearAll(){allResults=[];document.getElementById('tbody').innerHTML='<tr><td colspan="11"><div class="es"><h3>Cleared</h3><p>Select a universe and scan again.</p></div></td></tr>';document.getElementById('sumrow').style.display='none';document.getElementById('pc').style.display='none';document.getElementById('expbtn').disabled=true;document.getElementById('idle').style.display='block';document.getElementById('idle').textContent='Cleared.';document.getElementById('rcnt').textContent='No results yet';}
+function onUni(){document.getElementById('cw').className=document.getElementById('uni').value==='custom'?'show':'';}
+function stgl(lid,cid){const l=document.getElementById(lid),c=document.getElementById(cid);l.className=c.checked?'tgl on':'tgl';}
+function exportCSV(){if(!allResults.length){alert('Nothing to export.');return;}const h='Ticker,Price,Signal,Score,D-EMA20%,W-EMA20%,EMA20d,EMA50d,EMA200d\n';const r=allResults.filter(r=>r.signal!=='ERROR').map(r=>`${r.ticker},$${r.price.toFixed(2)},${r.signal},${r.score},${r.d20.toFixed(1)}%,${r.w20.toFixed(1)}%,$${r.e20d.toFixed(2)},$${r.e50d.toFixed(2)},$${r.e200d.toFixed(2)}`).join('\n');const b=new Blob([h+r],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='swing_scan_'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
+</script>
+</body>
+</html>
